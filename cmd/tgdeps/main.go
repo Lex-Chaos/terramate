@@ -47,6 +47,7 @@ func main() {
 
 	for _, mod := range modules {
 		fmt.Printf("Module: %s\n", mod.Path)
+		fmt.Printf("\tSource: %s\n", mod.Source)
 		for _, triggerPath := range mod.DependsOn {
 			fmt.Printf("\t- %s\n", triggerPath)
 		}

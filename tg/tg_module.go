@@ -30,6 +30,7 @@ type (
 	// Module is a Terragrunt module.
 	Module struct {
 		Path       project.Path  `json:"path"`
+		Source     string        `json:"source"`
 		ConfigFile project.Path  `json:"config"`
 		After      project.Paths `json:"after,omitempty"`
 
@@ -130,6 +131,7 @@ func ScanModules(rootdir string, dir project.Path) (Modules, error) {
 
 		// first module is the module at cfgfile directory.
 		tgMod := stack.Modules[0]
+		mod.Source = *tgConfig.Terraform.Source
 		dependsOn := map[project.Path]struct{}{}
 		for _, path := range mod.DependsOn {
 			dependsOn[path] = struct{}{}

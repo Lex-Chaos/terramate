@@ -68,6 +68,7 @@ func TestTerragruntScanModules(t *testing.T) {
 				modules: tg.Modules{
 					{
 						Path:       project.NewPath("/"),
+						Source:     "https://some.etc/prj",
 						ConfigFile: project.NewPath("/terragrunt.hcl"),
 					},
 				},
@@ -84,6 +85,7 @@ func TestTerragruntScanModules(t *testing.T) {
 				modules: tg.Modules{
 					{
 						Path:       project.NewPath("/some/dir"),
+						Source:     "https://some.etc/prj",
 						ConfigFile: project.NewPath("/some/dir/terragrunt.hcl"),
 					},
 				},
@@ -103,10 +105,12 @@ func TestTerragruntScanModules(t *testing.T) {
 				modules: tg.Modules{
 					{
 						Path:       project.NewPath("/some/dir"),
+						Source:     "https://some.etc/prj",
 						ConfigFile: project.NewPath("/some/dir/terragrunt.hcl"),
 					},
 					{
 						Path:       project.NewPath("/some/other/dir"),
+						Source:     "https://some.etc/prj",
 						ConfigFile: project.NewPath("/some/other/dir/terragrunt.hcl"),
 					},
 				},
@@ -148,6 +152,7 @@ func TestTerragruntScanModules(t *testing.T) {
 				modules: tg.Modules{
 					{
 						Path:       project.NewPath("/some/dir"),
+						Source:     "https://some.etc/prj",
 						ConfigFile: project.NewPath("/some/dir/terragrunt.hcl"),
 						DependsOn: project.Paths{
 							project.NewPath("/some/other/dir"),
@@ -161,10 +166,12 @@ func TestTerragruntScanModules(t *testing.T) {
 					},
 					{
 						Path:       project.NewPath("/some/other/dir"),
+						Source:     "https://some.etc/prj",
 						ConfigFile: project.NewPath("/some/other/dir/terragrunt.hcl"),
 					},
 					{
 						Path:       project.NewPath("/some/other2/dir"),
+						Source:     "https://some.etc/prj",
 						ConfigFile: project.NewPath("/some/other2/dir/terragrunt.hcl"),
 					},
 				},
@@ -201,6 +208,7 @@ func TestTerragruntScanModules(t *testing.T) {
 				modules: tg.Modules{
 					{
 						Path:       project.NewPath("/some/dir"),
+						Source:     "https://some.etc/prj",
 						ConfigFile: project.NewPath("/some/dir/terragrunt.hcl"),
 						DependsOn: project.Paths{
 							project.NewPath("/terragrunt.hcl"),
@@ -212,10 +220,66 @@ func TestTerragruntScanModules(t *testing.T) {
 					},
 					{
 						Path:       project.NewPath("/some/other/dir"),
+						Source:     "https://some.etc/prj",
 						ConfigFile: project.NewPath("/some/other/dir/terragrunt.hcl"),
 					},
 					{
 						Path:       project.NewPath("/some/other2/dir"),
+						Source:     "https://some.etc/prj",
+						ConfigFile: project.NewPath("/some/other2/dir/terragrunt.hcl"),
+					},
+				},
+			},
+		},
+		{
+			name: "module with ordering dependencies",
+			layout: []string{
+				`f:some/dir/terragrunt.hcl:` + Doc(
+					Block("terraform",
+						Str("source", "https://some.etc/prj"),
+					),
+					Block("include",
+						Labels("root"),
+						Expr("path", `find_in_parent_folders()`),
+					),
+					Block("dependencies",
+						Expr("paths", `["../other2/dir", "../other/dir"]`),
+					),
+				).String(),
+				`f:some/other/dir/terragrunt.hcl:` + Block("terraform",
+					Str("source", "https://some.etc/prj"),
+				).String(),
+				`f:some/other2/dir/terragrunt.hcl:` + Block("terraform",
+					Str("source", "https://some.etc/prj"),
+				).String(),
+				`f:terragrunt.hcl:` + Doc(
+					Block("terraform"),
+				).String(),
+				`f:common.tfvars:a = "1"`,
+				`f:regional.tfvars:b = "2"`,
+			},
+			want: want{
+				modules: tg.Modules{
+					{
+						Path:       project.NewPath("/some/dir"),
+						Source:     "https://some.etc/prj",
+						ConfigFile: project.NewPath("/some/dir/terragrunt.hcl"),
+						DependsOn: project.Paths{
+							project.NewPath("/terragrunt.hcl"),
+						},
+						After: project.Paths{
+							project.NewPath("/some/other/dir"),
+							project.NewPath("/some/other2/dir"),
+						},
+					},
+					{
+						Path:       project.NewPath("/some/other/dir"),
+						Source:     "https://some.etc/prj",
+						ConfigFile: project.NewPath("/some/other/dir/terragrunt.hcl"),
+					},
+					{
+						Path:       project.NewPath("/some/other2/dir"),
+						Source:     "https://some.etc/prj",
 						ConfigFile: project.NewPath("/some/other2/dir/terragrunt.hcl"),
 					},
 				},
@@ -240,6 +304,7 @@ func TestTerragruntScanModules(t *testing.T) {
 				modules: tg.Modules{
 					{
 						Path:       project.NewPath("/some/dir"),
+						Source:     "https://some.etc/prj",
 						ConfigFile: project.NewPath("/some/dir/terragrunt.hcl"),
 						DependsOn: project.Paths{
 							project.NewPath("/terragrunt.hcl"),
@@ -286,6 +351,7 @@ func TestTerragruntScanModules(t *testing.T) {
 				modules: tg.Modules{
 					{
 						Path:       project.NewPath("/some/dir"),
+						Source:     "https://some.etc/prj",
 						ConfigFile: project.NewPath("/some/dir/terragrunt.hcl"),
 						DependsOn: project.Paths{
 							project.NewPath("/some/file1.hcl"),
@@ -316,6 +382,7 @@ func TestTerragruntScanModules(t *testing.T) {
 				modules: tg.Modules{
 					{
 						Path:       project.NewPath("/some/dir"),
+						Source:     "https://some.etc/prj",
 						ConfigFile: project.NewPath("/some/dir/terragrunt.hcl"),
 						DependsOn: project.Paths{
 							project.NewPath("/other.hcl"),
@@ -344,6 +411,7 @@ func TestTerragruntScanModules(t *testing.T) {
 				modules: tg.Modules{
 					{
 						Path:       project.NewPath("/"),
+						Source:     "https://some.etc/prj",
 						ConfigFile: project.NewPath("/terragrunt.hcl"),
 						DependsOn: project.Paths{
 							project.NewPath("/cfg1.hcl"),
@@ -370,6 +438,7 @@ func TestTerragruntScanModules(t *testing.T) {
 				modules: tg.Modules{
 					{
 						Path:       project.NewPath("/"),
+						Source:     "https://some.etc/prj",
 						ConfigFile: project.NewPath("/terragrunt.hcl"),
 						DependsOn: project.Paths{
 							project.NewPath("/common.tfvars"),
